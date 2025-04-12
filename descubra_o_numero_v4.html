@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Adivinhação de Números</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .game-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+        }
+        h1 {
+            margin-top: 0;
+        }
+        .controls {
+            margin: 15px 0;
+        }
+        input[type="number"] {
+            width: 60px;
+            padding: 8px;
+            font-size: 16px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #userGuess {
+            padding: 10px;
+            font-size: 18px;
+            width: 100%;
+            max-width: 300px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        #randomNumber {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 15px 0;
+            min-height: 30px;
+        }
+        #feedback {
+            font-size: 18px;
+            margin: 15px 0;
+            min-height: 25px;
+        }
+        .checkbox-container {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Jogo de Adivinhação</h1>
+        
+        <div class="controls">
+            <label for="digitCount">Número de dígitos:</label>
+            <input type="number" id="digitCount" min="1" max="10" value="4">
+            <button onclick="initializeGame()">Novo Número</button>
+        </div>
+        
+        <div class="checkbox-container">
+            <input type="checkbox" id="showNumber" onchange="toggleNumberVisibility()">
+            <label for="showNumber">Mostrar número</label>
+        </div>
+        
+        <div id="randomNumber"></div>
+        
+        <input type="text" id="userGuess" pattern="\d+" 
+               placeholder="Digite seu palpite" title="Digite um número com a quantidade de dígitos selecionada">
+        
+        <div>
+            <button id="testButton" onclick="checkGuess()">Testar</button>
+        </div>
+        
+        <div id="feedback"></div>
+    </div>
+
+    <script>
+        // Variáveis globais
+        let targetNumber = '';
+        let digitCount = 4;
+        
+        // Elementos do DOM
+        const randomNumberElement = document.getElementById('randomNumber');
+        const userGuessInput = document.getElementById('userGuess');
+        const feedbackElement = document.getElementById('feedback');
+        const digitCountInput = document.getElementById('digitCount');
+        const showNumberCheckbox = document.getElementById('showNumber');
+        
+        // Inicializa o jogo
+        function initializeGame() {
+            generateNewNumber();
+            showNumberCheckbox.checked = false; // Garante que comece desmarcado
+            randomNumberElement.textContent = ''; // Garante que o número fique oculto
+        }
+        
+        // Gera um novo número aleatório com a quantidade de dígitos selecionada
+        function generateNewNumber() {
+            digitCount = parseInt(digitCountInput.value);
+            if (digitCount < 1) digitCount = 1;
+            if (digitCount > 10) digitCount = 10;
+            
+            const min = Math.pow(10, digitCount - 1);
+            const max = Math.pow(10, digitCount) - 1;
+            targetNumber = Math.floor(min + Math.random() * (max - min + 1)).toString();
+            
+            // Atualiza o campo de palpite
+            userGuessInput.maxLength = digitCount;
+            userGuessInput.placeholder = `Digite ${digitCount} dígitos`;
+            
+            feedbackElement.textContent = '';
+            userGuessInput.value = '';
+            
+            // Foca no campo de palpite
+            userGuessInput.focus();
+        }
+        
+        // Função para mostrar/esconder o número aleatório
+        function toggleNumberVisibility() {
+            if (showNumberCheckbox.checked) {
+                randomNumberElement.textContent = targetNumber;
+            } else {
+                randomNumberElement.textContent = '';
+            }
+        }
+        
+        // Função para verificar o palpite do usuário
+        function checkGuess() {
+            const userGuess = userGuessInput.value;
+            
+            // Validação do input
+            if (userGuess.length !== digitCount || !/^\d+$/.test(userGuess)) {
+                feedbackElement.textContent = `Digite um número com exatamente ${digitCount} dígitos!`;
+                feedbackElement.style.color = 'red';
+                return;
+            }
+            
+            let correctDigits = 0;
+            
+            // Compara cada dígito
+            for (let i = 0; i < digitCount; i++) {
+                if (userGuess[i] === targetNumber[i]) {
+                    correctDigits++;
+                }
+            }
+            
+            // Mostra o feedback
+            if (correctDigits === digitCount) {
+                feedbackElement.textContent = "Parabéns! Você acertou o número!";
+                feedbackElement.style.color = 'green';
+            } else {
+                feedbackElement.textContent = `Você acertou ${correctDigits} de ${digitCount} dígitos na posição correta.`;
+                feedbackElement.style.color = '#333';
+            }
+        }
+        
+        // Permite pressionar Enter para testar o palpite
+        userGuessInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkGuess();
+            }
+        });
+        
+        // Inicia o jogo quando a página carrega
+        window.onload = initializeGame;
+    </script>
+</body>
+</html>
